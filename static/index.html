@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://cdn.merakianalytics.com; img-src 'self' https: data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LoL Champions Gallery</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="window-drag-bar">
+      <img class="window-drag-icon" src="assets/tracker.png" alt="" aria-hidden="true" />
+      <span class="window-drag-title">League of Legends Arena Tracker</span>
+    </div>
+    <main class="page">
+      <div class="top-panels">
+        <header class="hero">
+          <div class="hero-main">
+            <article id="summoner-card" class="summoner-card is-disconnected" aria-live="polite">
+              <img
+                id="summoner-icon"
+                class="summoner-icon"
+                src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/29.jpg"
+                alt="Summoner icon"
+              />
+              <div class="summoner-meta">
+                <p id="summoner-state" class="summoner-state">Not connected</p>
+                <h2 id="summoner-name" class="summoner-name">Unknown Summoner</h2>
+                <p id="summoner-level" class="summoner-level">Level --</p>
+              </div>
+            </article>
+
+            <div class="actions">
+              <label class="challenge-control" for="challenge-select">
+                <span>Challenge</span>
+                <select id="challenge-select">
+                  <option value=""></option>
+                </select>
+                <button id="refresh-challenge" type="button" aria-label="Refresh challenge">&#x21BB;</button>
+                <p id="challenge-description" class="challenge-description" hidden></p>
+              </label>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <article id="selected-champion-card" class="selected-champion-card is-empty" aria-live="polite">
+              <div class="selected-champion-head">
+                <div id="selected-champion-icon-frame" class="selected-champion-icon-frame is-pending">
+                  <img
+                    id="selected-champion-icon"
+                    class="selected-champion-icon"
+                    src="assets/default.png"
+                    alt=""
+                  />
+                  <span id="selected-champion-status" class="selected-champion-status" aria-hidden="true">?</span>
+                </div>
+                <div class="selected-champion-meta">
+                  <h2 id="selected-champion-name" class="selected-champion-name">Aucun champion</h2>
+                  <p id="selected-champion-title" class="selected-champion-title"></p>
+                </div>
+              </div>
+              <div class="selected-champion-modes">
+                <section class="mode-stat-panel" aria-labelledby="selected-champion-aram-title">
+                  <h3 id="selected-champion-aram-title" class="mode-stat-title">ARAM</h3>
+                  <ul id="selected-champion-aram-stats" class="mode-stat-list"></ul>
+                </section>
+                <section class="mode-stat-panel" aria-labelledby="selected-champion-urf-title">
+                  <h3 id="selected-champion-urf-title" class="mode-stat-title">URF</h3>
+                  <ul id="selected-champion-urf-stats" class="mode-stat-list"></ul>
+                </section>
+              </div>
+            </article>
+          </div>
+        </header>
+
+        <section class="section filters-section" aria-labelledby="filters-title">
+          <h2 id="filters-title">Filtres</h2>
+          <div class="filters-top">
+            <div class="positions-field">
+              <div id="position-buttons" class="position-buttons" role="group" aria-label="Positions">
+                <button type="button" class="position-btn" data-position="TOP" aria-label="Top">
+                  <img class="position-icon" src="assets/top.png" alt="" aria-hidden="true" />
+                </button>
+                <button type="button" class="position-btn" data-position="JUNGLE" aria-label="Jungle">
+                  <img class="position-icon" src="assets/jungle.png" alt="" aria-hidden="true" />
+                </button>
+                <button type="button" class="position-btn" data-position="MIDDLE" aria-label="Mid">
+                  <img class="position-icon" src="assets/mid.png" alt="" aria-hidden="true" />
+                </button>
+                <button type="button" class="position-btn" data-position="BOTTOM" aria-label="Bot">
+                  <img class="position-icon" src="assets/bot.png" alt="" aria-hidden="true" />
+                </button>
+                <button type="button" class="position-btn" data-position="UTILITY" aria-label="Support">
+                  <img class="position-icon" src="assets/support.png" alt="" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+
+            <label class="filter-field search-field" for="champion-search">
+              <input id="champion-search" type="search" placeholder="Nom du champion" />
+            </label>
+          </div>
+          <label class="toggle-filter" for="hide-completed-toggle">
+            <input id="hide-completed-toggle" type="checkbox" />
+            <span class="toggle-filter-switch" aria-hidden="true"></span>
+            <span class="toggle-filter-label">Cacher les champions réussis</span>
+          </label>
+        </section>
+      </div>
+
+      <section class="section" aria-labelledby="collection-title">
+        <h2 id="collection-title">Collection</h2>
+        <h3 id="crowd-favorite-title" class="subsection-title">Crowd Favorite</h3>
+        <ul id="crowd-favorite-list" class="image-grid featured-grid featured-grid-in-collection"></ul>
+        <ul id="collection-list" class="image-grid all-grid"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="./renderer.js"></script>
+  </body>
+</html>

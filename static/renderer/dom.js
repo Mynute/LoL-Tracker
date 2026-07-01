@@ -1,0 +1,24 @@
+export const collectionTitleNode = document.getElementById("collection-title");
+
+export const crowdFavoriteTitleNode = document.getElementById("crowd-favorite-title");
+export const crowdFavoriteList = document.getElementById("crowd-favorite-list");
+export const collectionList = document.getElementById("collection-list");
+export const summonerCardNode = document.getElementById("summoner-card");
+export const summonerIconNode = document.getElementById("summoner-icon");
+export const summonerStateNode = document.getElementById("summoner-state");
+export const summonerNameNode = document.getElementById("summoner-name");
+export const summonerLevelNode = document.getElementById("summoner-level");
+export const challengeSelectNode = document.getElementById("challenge-select");
+export const challengeDescriptionNode = document.getElementById("challenge-description");
+export const selectedChampionCardNode = document.getElementById("selected-champion-card");
+export const selectedChampionIconFrameNode = document.getElementById("selected-champion-icon-frame");
+export const selectedChampionIconNode = document.getElementById("selected-champion-icon");
+export const selectedChampionStatusNode = document.getElementById("selected-champion-status");
+export const selectedChampionNameNode = document.getElementById("selected-champion-name");
+export const selectedChampionTitleNode = document.getElementById("selected-champion-title");
+export const selectedChampionAramStatsNode = document.getElementById("selected-champion-aram-stats");
+export const selectedChampionUrfStatsNode = document.getElementById("selected-champion-urf-stats");
+export const searchInputNode = document.getElementById("champion-search");
+export const positionButtonsNode = document.getElementById("position-buttons");
+export const hideCompletedToggleNode = document.getElementById("hide-completed-toggle");
+export const loadChallengeButtonNode = document.getElementById("refresh-challenge");

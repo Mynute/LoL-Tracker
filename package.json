@@ -1,0 +1,43 @@
+{
+  "name": "new-challenge-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^42.5.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  },
+  "build": {
+    "appId": "com.challengetracker.app",
+    "productName": "Challenge Tracker",
+    "directories": {
+      "buildResources": "static/assets"
+    },
+    "files": [
+      "app/**/*",
+      "static/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "static/assets/app.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
