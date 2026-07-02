@@ -26,4 +26,5 @@ export const settingsButtonNode = document.getElementById("settings-button");
 export const settingsPanelNode = document.getElementById("settings-panel");
 export const appVersionNode = document.getElementById("app-version");
 export const updateStatusNode = document.getElementById("update-status");
+export const summonerBackgroundToggleNode = document.getElementById("summoner-bg-toggle");
 export const checkUpdateButtonNode = document.getElementById("check-update-button");

@@ -122,6 +122,15 @@ body::before {
   color: #a6b8db;
 }
 
+.settings-switch {
+  margin-top: 2px;
+  margin-bottom: 10px;
+}
+
+.settings-switch .toggle-filter-label {
+  font-size: 0.82rem;
+}
+
 .settings-action-button {
   width: 100%;
   margin-top: 4px;
@@ -442,6 +451,14 @@ body::before {
     linear-gradient(130deg, rgba(37, 62, 104, 0.68), rgba(19, 32, 55, 0.9)),
     radial-gradient(120px 80px at 80% 10%, rgba(53, 217, 200, 0.18), transparent 70%);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.summoner-card.is-lux-banner {
+  background:
+    linear-gradient(130deg, rgba(6, 12, 24, 0.42), rgba(20, 32, 54, 0.22)),
+    url("assets/lux-banner.jpg");
+  background-size: cover;
+  background-position: 46% center;
 }
 
 .summoner-settings {

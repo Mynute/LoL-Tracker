@@ -1,11 +1,13 @@
 import {
   CHAMPIONS_URL,
   AUTO_CONNECT_RETRY_SECONDS,
-  DEFAULT_CHALLENGE_ID
+  DEFAULT_CHALLENGE_ID,
+  SUMMONER_BG_STORAGE_KEY
 } from "./renderer/config.js";
 import {
   crowdFavoriteList,
   collectionList,
+  summonerCardNode,
   challengeSelectNode,
   challengeDescriptionNode,
   searchInputNode,
@@ -16,6 +18,7 @@ import {
   settingsPanelNode,
   appVersionNode,
   updateStatusNode,
+  summonerBackgroundToggleNode,
   checkUpdateButtonNode
 } from "./renderer/dom.js";
 import { state } from "./renderer/state.js";
@@ -587,6 +590,14 @@ const onFiltersChanged = () => {
   updateCollectionView();
 };
 
+const applySummonerCardBackgroundPreference = (enabled) => {
+  if (!summonerCardNode) {
+    return;
+  }
+
+  summonerCardNode.classList.toggle("is-lux-banner", Boolean(enabled));
+};
+
 const mapUpdateStatusLabel = (payload) => {
   const updateState = String(payload?.state || "").toLowerCase();
 
@@ -698,6 +709,30 @@ const setupSettingsPanel = async () => {
   if (window.electronAPI?.onUpdateStatus) {
     window.electronAPI.onUpdateStatus((payload) => {
       updateStatusNode.textContent = mapUpdateStatusLabel(payload);
+    });
+  }
+
+  if (summonerBackgroundToggleNode) {
+    let isEnabled = false;
+
+    try {
+      isEnabled = localStorage.getItem(SUMMONER_BG_STORAGE_KEY) === "1";
+    } catch (error) {
+      isEnabled = false;
+    }
+
+    summonerBackgroundToggleNode.checked = isEnabled;
+    applySummonerCardBackgroundPreference(isEnabled);
+
+    summonerBackgroundToggleNode.addEventListener("change", () => {
+      const nextValue = summonerBackgroundToggleNode.checked;
+      applySummonerCardBackgroundPreference(nextValue);
+
+      try {
+        localStorage.setItem(SUMMONER_BG_STORAGE_KEY, nextValue ? "1" : "0");
+      } catch (error) {
+        // Ignore storage write failures.
+      }
     });
   }
 };
