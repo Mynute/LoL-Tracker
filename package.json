@@ -1,6 +1,6 @@
 {
   "name": "new-challenge-tracker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "license": "ISC",
   "author": "",
@@ -25,8 +25,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "${env.GH_OWNER}",
-        "repo": "${env.GH_REPO}"
+        "owner": "Mynute",
+        "repo": "LoL-Tracker"
       }
     ],
     "directories": {
