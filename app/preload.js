@@ -26,6 +26,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * @returns {Promise<{code:number,favorite?:object|Array,message?:string}>}
    */
   getCrowdFavorite: () => ipcRenderer.invoke('dialog:getCrowdFavorite'),
+  /**
+   * Returns current application version from main process.
+   * @returns {Promise<string>}
+   */
+  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
+  /**
+   * Triggers a manual update check.
+   * @returns {Promise<{ok:boolean,message:string}>}
+   */
+  checkForUpdates: () => ipcRenderer.invoke('app:checkForUpdates'),
   
   /**
    * Subscribes to champ select session updates.
@@ -61,5 +71,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * Fired when the League client closes (lockfile removed/disconnected).
    * @param {() => void} callback
    */
-  onClientClose: (callback) => ipcRenderer.on('lcu:client-close', () => callback())
+  onClientClose: (callback) => ipcRenderer.on('lcu:client-close', () => callback()),
+  /**
+   * Fired when auto-updater state changes.
+   * @param {(payload: {state: string, info?: object, progress?: object, message?: string}) => void} callback
+   */
+  onUpdateStatus: (callback) => ipcRenderer.on('app:update-status', (event, data) => callback(data))
 })

@@ -249,7 +249,7 @@ module.exports = class LCUConnect extends EventEmitter {
     const [msgId, eventType, eventData] = message;
 
     // Emit all events for debugging    
-    // this.emit('websocket:message', { eventType, eventData });
+    // this.emit('websocket:message', { eventType, eventData });    
 
     // Specific event handlers
     if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-champ-select/v1/session')) {

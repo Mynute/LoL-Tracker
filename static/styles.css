@@ -79,6 +79,66 @@ body::before {
   z-index: 1000;
 }
 
+.settings-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(86, 111, 154, 0.68);
+  background: linear-gradient(180deg, #1a2841, #111d31);
+  color: #dce7ff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-button:hover {
+  border-color: rgba(93, 219, 203, 0.75);
+  color: #5ddbcb;
+}
+
+.settings-panel {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  z-index: 1200;
+  width: min(320px, calc(100vw - 10px));
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(86, 111, 154, 0.68);
+  background:
+    linear-gradient(180deg, rgba(18, 29, 47, 0.98), rgba(11, 19, 33, 0.98));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
+}
+
+.settings-title {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #dbe6fb;
+}
+
+.settings-row {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: #a6b8db;
+}
+
+.settings-action-button {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid rgba(90, 119, 169, 0.5);
+  background: linear-gradient(180deg, #18243b, #101b2f);
+  color: #e8efff;
+  border-radius: 9px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.settings-action-button:hover {
+  border-color: rgba(93, 219, 203, 0.75);
+}
+
 .window-drag-title {
   font-size: 0.82rem;
   letter-spacing: 0.03em;
@@ -368,18 +428,27 @@ body::before {
 }
 
 .summoner-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
+  padding-right: 52px;
   border-radius: 14px;
   border: 1px solid rgba(72, 88, 120, 0.6);
   background:
     linear-gradient(130deg, rgba(37, 62, 104, 0.68), rgba(19, 32, 55, 0.9)),
     radial-gradient(120px 80px at 80% 10%, rgba(53, 217, 200, 0.18), transparent 70%);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.summoner-settings {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 300;
 }
 
 .summoner-card.is-disconnected {

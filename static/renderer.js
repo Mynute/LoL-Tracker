@@ -11,7 +11,12 @@ import {
   searchInputNode,
   positionButtonsNode,
   hideCompletedToggleNode,
-  loadChallengeButtonNode
+  loadChallengeButtonNode,
+  settingsButtonNode,
+  settingsPanelNode,
+  appVersionNode,
+  updateStatusNode,
+  checkUpdateButtonNode
 } from "./renderer/dom.js";
 import { state } from "./renderer/state.js";
 import { normalizeEntityId, normalizePosition, toChampionList } from "./renderer/helpers.js";
@@ -582,6 +587,121 @@ const onFiltersChanged = () => {
   updateCollectionView();
 };
 
+const mapUpdateStatusLabel = (payload) => {
+  const updateState = String(payload?.state || "").toLowerCase();
+
+  if (updateState === "checking") {
+    return "Checking...";
+  }
+  if (updateState === "update-available") {
+    const version = payload?.info?.version ? ` (${payload.info.version})` : "";
+    return `Update available${version}`;
+  }
+  if (updateState === "download-progress") {
+    const percent = Number(payload?.progress?.percent);
+    if (Number.isFinite(percent)) {
+      return `Downloading ${Math.round(percent)}%`;
+    }
+    return "Downloading...";
+  }
+  if (updateState === "update-downloaded") {
+    return "Ready to install";
+  }
+  if (updateState === "update-not-available") {
+    return "Up to date";
+  }
+  if (updateState === "error") {
+    return `Error: ${payload?.message || "unknown"}`;
+  }
+
+  return "Idle";
+};
+
+const closeSettingsPanel = () => {
+  if (!settingsPanelNode || !settingsButtonNode) {
+    return;
+  }
+
+  settingsPanelNode.hidden = true;
+  settingsButtonNode.setAttribute("aria-expanded", "false");
+};
+
+const toggleSettingsPanel = () => {
+  if (!settingsPanelNode || !settingsButtonNode) {
+    return;
+  }
+
+  const willOpen = settingsPanelNode.hidden;
+  settingsPanelNode.hidden = !willOpen;
+  settingsButtonNode.setAttribute("aria-expanded", String(willOpen));
+};
+
+const setupSettingsPanel = async () => {
+  if (!settingsPanelNode || !settingsButtonNode || !appVersionNode || !updateStatusNode) {
+    return;
+  }
+
+  settingsButtonNode.addEventListener("click", () => {
+    toggleSettingsPanel();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (settingsPanelNode.hidden) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Node)) {
+      return;
+    }
+
+    if (settingsPanelNode.contains(target) || settingsButtonNode.contains(target)) {
+      return;
+    }
+
+    closeSettingsPanel();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeSettingsPanel();
+    }
+  });
+
+  if (window.electronAPI?.getAppVersion) {
+    try {
+      const version = await window.electronAPI.getAppVersion();
+      appVersionNode.textContent = version || "-";
+    } catch (error) {
+      appVersionNode.textContent = "-";
+    }
+  }
+
+  if (checkUpdateButtonNode && window.electronAPI?.checkForUpdates) {
+    checkUpdateButtonNode.addEventListener("click", async () => {
+      updateStatusNode.textContent = "Checking...";
+      checkUpdateButtonNode.disabled = true;
+
+      try {
+        const result = await window.electronAPI.checkForUpdates();
+        if (!result?.ok) {
+          updateStatusNode.textContent = result?.message || "Unable to check updates";
+        }
+      } catch (error) {
+        updateStatusNode.textContent = "Unable to check updates";
+      } finally {
+        checkUpdateButtonNode.disabled = false;
+      }
+    });
+  }
+
+  if (window.electronAPI?.onUpdateStatus) {
+    window.electronAPI.onUpdateStatus((payload) => {
+      updateStatusNode.textContent = mapUpdateStatusLabel(payload);
+    });
+  }
+};
+
 loadChallengeButtonNode.addEventListener("click", () => {
   getSummonerChallenges({ forceRefresh: true, silentIfUnavailable: false });
 });
@@ -627,6 +747,7 @@ positionButtonsNode.addEventListener("click", (event) => {
 });
 
 syncPositionButtonsUI();
+setupSettingsPanel();
 loadChampionsAndRender();
 renderSelectedChampionCard("");
 startLauncherRetry();

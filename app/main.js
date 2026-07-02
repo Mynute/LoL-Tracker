@@ -11,6 +11,7 @@ const {
 } = require('./main-process/lcu-handlers');
 
 let mainWindow = null;
+let canUseAutoUpdater = false;
 
 // LCU local API uses self-signed cert in desktop environment.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
@@ -41,20 +42,17 @@ app.on('second-instance', () => {
  * Requirements:
  * - app must be packaged (not dev mode)
  * - app must not be running from portable target
- * - AUTO_UPDATE_URL env var must point to folder hosting latest.yml and installers
+ * - build.publish must be configured for GitHub in package.json
  */
 const setupAutoUpdater = () => {
   const isPortableBuild = Boolean(process.env.PORTABLE_EXECUTABLE_FILE);
-  const updateUrl = process.env.AUTO_UPDATE_URL;
 
-  if (!app.isPackaged || isPortableBuild || !updateUrl) {
+  if (!app.isPackaged || isPortableBuild) {
+    canUseAutoUpdater = false;
     return;
   }
 
-  autoUpdater.setFeedURL({
-    provider: 'generic',
-    url: updateUrl
-  });
+  canUseAutoUpdater = true;
 
   autoUpdater.on('update-available', (info) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -92,6 +90,12 @@ const setupAutoUpdater = () => {
   });
 
   autoUpdater.on('update-downloaded', async () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'update-downloaded'
+      });
+    }
+
     const messageBoxResponse = await dialog.showMessageBox({
       type: 'info',
       buttons: ['Redemarrer maintenant', 'Plus tard'],
@@ -111,6 +115,38 @@ const setupAutoUpdater = () => {
 };
 
 /**
+ * Requests an explicit update check from renderer settings panel.
+ * @returns {Promise<{ok:boolean,message:string}>}
+ */
+const handleManualUpdateCheck = async () => {
+  if (!canUseAutoUpdater) {
+    return {
+      ok: false,
+      message: 'Updater unavailable in dev mode or portable build'
+    };
+  }
+
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'checking'
+      });
+    }
+
+    await autoUpdater.checkForUpdates();
+    return {
+      ok: true,
+      message: 'Update check started'
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error?.message || 'Unable to check updates'
+    };
+  }
+};
+
+/**
  * App bootstrap:
  * - remove default menu
  * - register IPC handlers
@@ -123,6 +159,8 @@ app.whenReady().then(async () => {
   ipcMain.handle('dialog:getSummonerData', handleGetSummonerData);
   ipcMain.handle('dialog:getSummonerChallenges', handleGetSummonerChallenges);
   ipcMain.handle('dialog:getCrowdFavorite', handleGetCrowdFavorite);
+  ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:checkForUpdates', handleManualUpdateCheck);
 
   mainWindow = await createMainWindow();
   setMainWindow(mainWindow);

@@ -9,11 +9,13 @@ Desktop Electron app to track challenges progression and champion viability in r
 - Auto-detects League lockfile and connects to LCU
 - Single app instance (focuses existing window on second launch)
 - Summoner card with retry logic when launcher/client is unavailable
+- Settings gear in top-right of summoner card (version + updater actions)
 - Challenge selector with description and completion tracking
 - Champion grid with search/position/hide-completed filters
 - Selected champion side card with ARAM and URF modifiers
 - Crowd favorite section from champ-select endpoint
 - Automatic UI fallback on client close (`client-close` event)
+- Manual `Check for updates` action from renderer UI
 - Window size and position persistence between launches
 
 ## Tech Stack
@@ -72,6 +74,8 @@ Methods:
 - `getSummonerData()`
 - `getSummonerChallenges({ forceRefresh? })`
 - `getCrowdFavorite()`
+- `getAppVersion()`
+- `checkForUpdates()`
 
 Events:
 
@@ -82,6 +86,7 @@ Events:
 - `onWebSocketDisconnected(callback)`
 - `onWebSocketError(callback)`
 - `onClientClose(callback)`
+- `onUpdateStatus(callback)`
 
 ## Runtime Flow (High Level)
 
@@ -91,6 +96,36 @@ Events:
 4. Preload forwards IPC results/events to renderer.
 5. Renderer refreshes summoner/challenges/crowd-favorites and updates selected champion card.
 6. If lockfile disappears or client closes, main emits `lcu:client-close`; renderer resets to waiting mode.
+
+## Auto Update
+
+The app uses `electron-updater` in the main process.
+
+Conditions for update check:
+
+- App is packaged (`app.isPackaged`)
+- App is not running as portable build
+- `build.publish` is configured for GitHub Releases (already set to `Mynute/LoL-Tracker`)
+
+To publish updates, define this environment variable:
+
+- `GH_TOKEN`: GitHub token with permission to create/update release assets
+
+Example:
+
+```powershell
+$env:GH_TOKEN="ghp_xxx"
+npm run publish:win
+```
+
+Updater status values sent to renderer via `onUpdateStatus`:
+
+- `checking`
+- `update-available`
+- `download-progress`
+- `update-not-available`
+- `update-downloaded`
+- `error`
 
 ## Notes
 

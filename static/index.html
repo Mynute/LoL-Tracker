@@ -21,6 +21,26 @@
         <header class="hero">
           <div class="hero-main">
             <article id="summoner-card" class="summoner-card is-disconnected" aria-live="polite">
+              <div class="summoner-settings">
+                <button
+                  id="settings-button"
+                  class="settings-button"
+                  type="button"
+                  aria-label="Ouvrir les options"
+                  aria-expanded="false"
+                  aria-controls="settings-panel"
+                >
+                  &#9881;
+                </button>
+                <aside id="settings-panel" class="settings-panel" hidden>
+                  <h2 class="settings-title">Application</h2>
+                  <p class="settings-row">Version: <strong id="app-version">-</strong></p>
+                  <p class="settings-row">Update: <span id="update-status">Idle</span></p>
+                  <button id="check-update-button" type="button" class="settings-action-button">
+                    Check for updates
+                  </button>
+                </aside>
+              </div>
               <img
                 id="summoner-icon"
                 class="summoner-icon"
