@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { createMainWindow } = require('./main-process/window');
 const {
   setMainWindow,
@@ -35,6 +36,81 @@ app.on('second-instance', () => {
 });
 
 /**
+ * Initializes electron-updater.
+ *
+ * Requirements:
+ * - app must be packaged (not dev mode)
+ * - app must not be running from portable target
+ * - AUTO_UPDATE_URL env var must point to folder hosting latest.yml and installers
+ */
+const setupAutoUpdater = () => {
+  const isPortableBuild = Boolean(process.env.PORTABLE_EXECUTABLE_FILE);
+  const updateUrl = process.env.AUTO_UPDATE_URL;
+
+  if (!app.isPackaged || isPortableBuild || !updateUrl) {
+    return;
+  }
+
+  autoUpdater.setFeedURL({
+    provider: 'generic',
+    url: updateUrl
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'update-available',
+        info
+      });
+    }
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'download-progress',
+        progress
+      });
+    }
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'update-not-available'
+      });
+    }
+  });
+
+  autoUpdater.on('error', (error) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-status', {
+        state: 'error',
+        message: error?.message || 'Unknown updater error'
+      });
+    }
+  });
+
+  autoUpdater.on('update-downloaded', async () => {
+    const messageBoxResponse = await dialog.showMessageBox({
+      type: 'info',
+      buttons: ['Redemarrer maintenant', 'Plus tard'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Mise a jour prete',
+      message: 'Une nouvelle version a ete telechargee.',
+      detail: 'Redemarrer l application pour installer la mise a jour.'
+    });
+
+    if (messageBoxResponse.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+
+  autoUpdater.checkForUpdatesAndNotify();
+};
+
+/**
  * App bootstrap:
  * - remove default menu
  * - register IPC handlers
@@ -50,6 +126,7 @@ app.whenReady().then(async () => {
 
   mainWindow = await createMainWindow();
   setMainWindow(mainWindow);
+  setupAutoUpdater();
 
   /**
    * Recreates the window on macOS dock activation when all windows are closed.

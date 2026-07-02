@@ -8,18 +8,27 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:win": "electron-builder --win"
+    "build:win": "electron-builder --win",
+    "publish:win": "electron-builder --win --publish always"
   },
   "devDependencies": {
     "electron": "^42.5.0",
     "electron-builder": "^24.6.4"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "ws": "^8.17.0"
   },
   "build": {
     "appId": "com.challengetracker.app",
     "productName": "Challenge Tracker",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "${env.GH_OWNER}",
+        "repo": "${env.GH_REPO}"
+      }
+    ],
     "directories": {
       "buildResources": "static/assets"
     },
@@ -30,10 +39,9 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
-      "icon": "static/assets/app.ico"
+      "icon": "static/assets/tracker.ico"
     },
     "nsis": {
       "oneClick": false,
