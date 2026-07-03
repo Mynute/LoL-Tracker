@@ -4,6 +4,7 @@ export const state = {
   champions: [],
   crowdFavoriteIds: [],
   summonerId: "",
+  summonerPuuid: "",
   completedChampionIds: new Set(),
   challengePayload: null,
   selectedChallengeId: DEFAULT_CHALLENGE_ID,

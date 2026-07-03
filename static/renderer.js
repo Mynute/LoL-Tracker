@@ -92,12 +92,15 @@ const extractGameStartChampionId = (gameStartData) => {
       : [];
 
   const localSummonerId = normalizeEntityId(state.summonerId);
+  const localSummonerPuuid = normalizeEntityId(state.summonerPuuid);
   const localSelection = playerSelections.find((selection) => {
-    const selectionSummonerId = normalizeEntityId(
-      selection?.summonerId ?? selection?.summonerInternalName ?? selection?.puuid ?? selection?.subject
-    );
+    const selectionSummonerId = normalizeEntityId(selection?.summonerId ?? selection?.subject);
+    const selectionPuuid = normalizeEntityId(selection?.puuid ?? selection?.summonerInternalName);
 
-    return localSummonerId && selectionSummonerId === localSummonerId;
+    return (
+      (localSummonerId && selectionSummonerId === localSummonerId) ||
+      (localSummonerPuuid && selectionPuuid === localSummonerPuuid)
+    );
   });
 
   if (localSelection) {
@@ -372,23 +375,6 @@ const renderCrowdFavorites = (favoriteIds) => {
 };
 
 /**
- * Refreshes crowd favorites from LCU.
- */
-const refreshCrowdFavorites = async () => {
-  try {
-    const crowdFavorite = await window.electronAPI.getCrowdFavorite();
-    if (crowdFavorite?.code !== 200) {
-      return;
-    }
-
-    const favoriteIds = extractCrowdFavoriteIds(crowdFavorite.favorite);
-    renderCrowdFavorites(favoriteIds);
-  } catch (error) {
-    // Keep existing crowd favorite UI if request fails.
-  }
-};
-
-/**
  * Applies selected challenge and updates completed champions + description.
  * @param {unknown} payload
  */
@@ -609,8 +595,9 @@ const attemptGetCurrentSummoner = async () => {
     ) {
       state.isSummonerConnected = true;
       state.summonerId = normalizeEntityId(
-        summonerData.summoner.summonerId ?? summonerData.summoner.id ?? summonerData.summoner.puuid
+        summonerData.summoner.summonerId ?? summonerData.summoner.id
       );
+      state.summonerPuuid = normalizeEntityId(summonerData.summoner.puuid);
       stopSummonerRetry();
       renderSummonerCard(summonerData.summoner);
       return true;
@@ -931,31 +918,48 @@ startLauncherRetry();
 if (window.electronAPI?.onChampSelectUpdate) {
   window.electronAPI.onChampSelectUpdate((eventData) => {
     const nextSelectedChampionId = extractSelectedChampionId(eventData);
+    if (nextSelectedChampionId == "-3") {
+        renderSelectedChampionCard(nextSelectedChampionId);
+        return;
+      }
     if (nextSelectedChampionId) {
       renderSelectedChampionCard(nextSelectedChampionId);
     }
+  });
+}
 
-    if (eventData.id == null || eventData.id === "") {
+if (window.electronAPI?.onChampSelectCrowdFavorite) {
+  window.electronAPI.onChampSelectCrowdFavorite((eventData) => {
+    const eventType = String(eventData?.eventType || "").toLowerCase();
+
+    if (eventType === "delete") {
       renderCrowdFavorites([]);
       return;
     }
-    refreshCrowdFavorites();
+
+    const favoriteIds = extractCrowdFavoriteIds(eventData?.data ?? eventData);
+    renderCrowdFavorites(favoriteIds);
   });
 }
 
 if (window.electronAPI?.onChampSelectPick) {
   window.electronAPI.onChampSelectPick((eventData) => {
-    const eventType = String(eventData?.eventType || "").toLowerCase();
-
+    const eventType = String(eventData?.eventType || "").toLowerCase();    
     if (eventType === "delete") {
       return;
     }
 
     if (eventType === "create" || eventType === "update") {
       const nextSelectedChampionId = normalizeEntityId(eventData?.data);
+      if (nextSelectedChampionId == "-3") {
+        renderSelectedChampionCard(nextSelectedChampionId);
+        return;
+      }
+
       if (nextSelectedChampionId) {
         renderSelectedChampionCard(nextSelectedChampionId);
-      }
+      } 
+      
     }
   });
 }
@@ -966,6 +970,7 @@ if (window.electronAPI?.onClientClose) {
     state.isSummonerConnected = false;
     state.isSummonerRetrying = false;
     state.summonerId = "";
+    state.summonerPuuid = "";
     state.crowdFavoriteIds = [];
     stopSummonerRetry();
     renderSelectedChampionCard("");

@@ -201,7 +201,7 @@ module.exports = class LCUConnect extends EventEmitter {
 
     this.ws.on('message', (data) => {
       try {
-        // Ignore if buffer length is 0
+        // Ignore if buffer length is 0        
         if (Buffer.from(data).length > 0) {
           const message = JSON.parse(data);
           this.handleWebSocketMessage(message);
@@ -249,20 +249,27 @@ module.exports = class LCUConnect extends EventEmitter {
     const [msgId, eventType, eventData] = message;
 
     // Emit all events for debugging    
-    // this.emit('websocket:message', { eventType, eventData });    
+    // this.emit('websocket:message', { eventType, eventData });
 
     // Specific event handlers
     if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-champ-select/v1/session')) {
       this.emit('champ-select:update', eventData.data);
     }
 
-    if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-champ-select/v1/current-champion')) {
+    if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-champ-select/v1/current-champion')) {      
       this.emit('champ-select:pick', eventData);
     }
 
-    // if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-champ-select/v1/disabled-champions')) {
-    //   this.emit('champ-select:disabled-champs', eventData.data);
-    // }
+    if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-lobby-team-builder/champ-select/v1/crowd-favorite-champion-list')) {
+      this.emit('champ-select:crowd-favorite', eventData);
+    }
+
+    if (eventType === 'OnJsonApiEvent' && eventData?.uri?.includes('/lol-gameflow/v1/session')) {
+      // Lobby, Matchmaking, ReadyCheck, ChampSelect, GameStart, InProgress, WaitingForStats
+      if (eventData.data.phase == "GameStart") {
+        this.emit('game:start', eventData.data);
+      }
+    }
   }
 
   /**

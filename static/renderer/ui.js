@@ -118,9 +118,26 @@ export const syncSelectedChampionCardsUI = () => {
  */
 export const renderSelectedChampionCard = (championId) => {
   const normalizedId = normalizeEntityId(championId);
+  const isBraverySelection = normalizedId == "-3";
   const champion = state.champions.find((entry) => entry.id === normalizedId) || null;
 
-  state.selectedChampionId = champion?.id || "";
+  state.selectedChampionId = champion?.id || (isBraverySelection ? normalizedId : "");
+
+  if (isBraverySelection) {
+    selectedChampionCardNode.classList.remove("is-empty");
+    selectedChampionIconFrameNode.classList.remove("is-validated");
+    selectedChampionIconFrameNode.classList.add("is-pending");
+    selectedChampionStatusNode.textContent = "?";
+    selectedChampionStatusNode.setAttribute("aria-label", t("selected.unknownStatus"));
+    selectedChampionNameNode.textContent = t("selected.bravery");
+    selectedChampionTitleNode.textContent = t("selected.braveryWaiting");
+    selectedChampionIconNode.src = "assets/bravery.png";
+    selectedChampionIconNode.alt = t("selected.bravery");
+    renderModeStats(selectedChampionAramStatsNode, [], t("selected.aram.noneActive"));
+    renderModeStats(selectedChampionUrfStatsNode, [], t("selected.urf.noneActive"));
+    syncSelectedChampionCardsUI();
+    return;
+  }
 
   if (!champion) {
     selectedChampionCardNode.classList.add("is-empty");

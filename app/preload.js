@@ -48,6 +48,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   onChampSelectPick: (callback) => ipcRenderer.on('lcu:champ-select-pick', (event, data) => callback(data)),
   /**
+   * Subscribes to crowd-favorite updates from champ select websocket events.
+   * @param {(data: {eventType?: string, data?: object|Array, uri?: string}) => void} callback
+   */
+  onChampSelectCrowdFavorite: (callback) => ipcRenderer.on('lcu:champ-select-crowd-favorite', (event, data) => callback(data)),
+  /**
    * Fired when gameflow enters GameStart phase.
    * @param {(data: object) => void} callback
    */

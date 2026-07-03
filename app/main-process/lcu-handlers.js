@@ -31,6 +31,12 @@ const setupWebSocketListeners = () => {
     }
   });
 
+  connector.on('champ-select:crowd-favorite', (data) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('lcu:champ-select-crowd-favorite', data);
+    }
+  });
+
   connector.on('game:start', (data) => {
     if (mainWindow) {
       mainWindow.webContents.send('lcu:game-start', data);
