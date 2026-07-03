@@ -48,6 +48,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   onChampSelectPick: (callback) => ipcRenderer.on('lcu:champ-select-pick', (event, data) => callback(data)),
   /**
+   * Fired when gameflow enters GameStart phase.
+   * @param {(data: object) => void} callback
+   */
+  onGameStart: (callback) => ipcRenderer.on('lcu:game-start', (event, data) => callback(data)),
+  /**
    * Subscribes to disabled champions updates.
    * @param {(data: object) => void} callback
    */

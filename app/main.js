@@ -13,6 +13,15 @@ const {
 let mainWindow = null;
 let canUseAutoUpdater = false;
 
+const logUpdater = (message, details) => {
+  if (details === undefined) {
+    console.log(`[updater] ${message}`);
+    return;
+  }
+
+  console.log(`[updater] ${message}`, details);
+};
+
 // LCU local API uses self-signed cert in desktop environment.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
@@ -49,12 +58,22 @@ const setupAutoUpdater = () => {
 
   if (!app.isPackaged || isPortableBuild) {
     canUseAutoUpdater = false;
+    logUpdater('disabled', {
+      isPackaged: app.isPackaged,
+      isPortableBuild
+    });
     return;
   }
 
   canUseAutoUpdater = true;
+  logUpdater('enabled', {
+    version: app.getVersion(),
+    isPackaged: app.isPackaged,
+    isPortableBuild
+  });
 
   autoUpdater.on('update-available', (info) => {
+    logUpdater('update available', info);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app:update-status', {
         state: 'update-available',
@@ -64,6 +83,12 @@ const setupAutoUpdater = () => {
   });
 
   autoUpdater.on('download-progress', (progress) => {
+    logUpdater('download progress', {
+      percent: progress?.percent,
+      transferred: progress?.transferred,
+      total: progress?.total,
+      bytesPerSecond: progress?.bytesPerSecond
+    });
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app:update-status', {
         state: 'download-progress',
@@ -73,6 +98,7 @@ const setupAutoUpdater = () => {
   });
 
   autoUpdater.on('update-not-available', () => {
+    logUpdater('update not available');
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app:update-status', {
         state: 'update-not-available'
@@ -81,6 +107,7 @@ const setupAutoUpdater = () => {
   });
 
   autoUpdater.on('error', (error) => {
+    logUpdater('error', error?.stack || error?.message || error);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app:update-status', {
         state: 'error',
@@ -90,6 +117,7 @@ const setupAutoUpdater = () => {
   });
 
   autoUpdater.on('update-downloaded', async () => {
+    logUpdater('update downloaded');
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('app:update-status', {
         state: 'update-downloaded'
@@ -107,10 +135,15 @@ const setupAutoUpdater = () => {
     });
 
     if (messageBoxResponse.response === 0) {
+      logUpdater('quit and install accepted by user');
       autoUpdater.quitAndInstall();
+      return;
     }
+
+    logUpdater('quit and install postponed by user');
   });
 
+  logUpdater('startup check requested');
   autoUpdater.checkForUpdatesAndNotify();
 };
 
@@ -120,6 +153,7 @@ const setupAutoUpdater = () => {
  */
 const handleManualUpdateCheck = async () => {
   if (!canUseAutoUpdater) {
+    logUpdater('manual check refused', 'Updater unavailable in dev mode or portable build');
     return {
       ok: false,
       message: 'Updater unavailable in dev mode or portable build'
@@ -133,12 +167,18 @@ const handleManualUpdateCheck = async () => {
       });
     }
 
+    logUpdater('manual check requested', {
+      version: app.getVersion(),
+      isPackaged: app.isPackaged
+    });
     await autoUpdater.checkForUpdates();
+    logUpdater('manual check started');
     return {
       ok: true,
       message: 'Update check started'
     };
   } catch (error) {
+    logUpdater('manual check failed', error?.stack || error?.message || error);
     return {
       ok: false,
       message: error?.message || 'Unable to check updates'

@@ -3,6 +3,7 @@ import { DEFAULT_CHALLENGE_ID } from "./config.js";
 export const state = {
   champions: [],
   crowdFavoriteIds: [],
+  summonerId: "",
   completedChampionIds: new Set(),
   challengePayload: null,
   selectedChallengeId: DEFAULT_CHALLENGE_ID,

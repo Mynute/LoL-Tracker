@@ -65,6 +65,38 @@ const extractSelectedChampionId = (sessionData) => {
 };
 
 /**
+ * Extracts local player's champion id from gameflow GameStart payload.
+ * @param {object} gameStartData
+ * @returns {string}
+ */
+const extractGameStartChampionId = (gameStartData) => {
+  if (!gameStartData || typeof gameStartData !== "object") {
+    return "";
+  }
+
+  const playerSelections = Array.isArray(gameStartData?.gameData?.playerChampionSelections)
+    ? gameStartData.gameData.playerChampionSelections
+    : Array.isArray(gameStartData?.playerChampionSelections)
+      ? gameStartData.playerChampionSelections
+      : [];
+
+  const localSummonerId = normalizeEntityId(state.summonerId);
+  const localSelection = playerSelections.find((selection) => {
+    const selectionSummonerId = normalizeEntityId(
+      selection?.summonerId ?? selection?.summonerInternalName ?? selection?.puuid ?? selection?.subject
+    );
+
+    return localSummonerId && selectionSummonerId === localSummonerId;
+  });
+
+  if (localSelection) {
+    return normalizeEntityId(localSelection.championId ?? localSelection.selectedChampionId);
+  }
+
+  return normalizeEntityId(gameStartData?.championId ?? gameStartData?.gameData?.championId);
+};
+
+/**
  * Normalizes challenge list payload shape.
  * @param {unknown} payload
  * @returns {Array}
@@ -556,6 +588,9 @@ const attemptGetCurrentSummoner = async () => {
       (summonerData.summoner.displayName || summonerData.summoner.gameName)
     ) {
       state.isSummonerConnected = true;
+      state.summonerId = normalizeEntityId(
+        summonerData.summoner.summonerId ?? summonerData.summoner.id ?? summonerData.summoner.puuid
+      );
       stopSummonerRetry();
       renderSummonerCard(summonerData.summoner);
       return true;
@@ -824,11 +859,21 @@ if (window.electronAPI?.onClientClose) {
     state.isClientConnected = false;
     state.isSummonerConnected = false;
     state.isSummonerRetrying = false;
+    state.summonerId = "";
     state.crowdFavoriteIds = [];
     stopSummonerRetry();
     renderSelectedChampionCard("");
     renderCrowdFavorites([]);
     renderDisconnectedSummonerCard("Launcher ferme");
     startLauncherRetry();
+  });
+}
+
+if (window.electronAPI?.onGameStart) {
+  window.electronAPI.onGameStart((eventData) => {
+    const nextSelectedChampionId = extractGameStartChampionId(eventData);
+    if (nextSelectedChampionId) {
+      renderSelectedChampionCard(nextSelectedChampionId);
+    }
   });
 }

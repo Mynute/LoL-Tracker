@@ -31,6 +31,12 @@ const setupWebSocketListeners = () => {
     }
   });
 
+  connector.on('game:start', (data) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('lcu:game-start', data);
+    }
+  });
+
   connector.on('champ-select:disabled-champs', (data) => {
     if (mainWindow) {
       mainWindow.webContents.send('lcu:champ-select-disabled-champs', data);
