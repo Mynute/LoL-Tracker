@@ -1,6 +1,6 @@
-# League of Legends Challenge Tracker
+# League of Legends Challenges Tracker
 
-Desktop Electron app to track challenges progression and champion viability in real time from League Client (LCU).
+Desktop Electron app to track challenge progression and champion viability in real time from League Client (LCU).
 
 ![Main frame](static/assets/mainframe.png)
 
@@ -9,11 +9,14 @@ Desktop Electron app to track challenges progression and champion viability in r
 - Auto-detects League lockfile and connects to LCU
 - Single app instance (focuses existing window on second launch)
 - Summoner card with retry logic when launcher/client is unavailable
-- Settings gear in top-right of summoner card (version + updater actions)
+- Summoner ID tracking for session management
+- Settings gear in top-right of summoner card (version + updater + language toggle)
 - Challenge selector with description and completion tracking
 - Champion grid with search/position/hide-completed filters
 - Selected champion side card with ARAM and URF modifiers
 - Crowd favorite section from champ-select endpoint
+- Automatic champion update on game start event
+- Full internationalization (FR/EN) with language persistence
 - Automatic UI fallback on client close (`client-close` event)
 - Manual `Check for updates` action from renderer UI
 - Window size and position persistence between launches
@@ -37,7 +40,8 @@ Desktop Electron app to track challenges progression and champion viability in r
 - `static/renderer.js`: renderer orchestration (state flow, listeners, retries)
 - `static/renderer/config.js`: renderer constants
 - `static/renderer/dom.js`: DOM node references
-- `static/renderer/state.js`: shared renderer state
+- `static/renderer/state.js`: shared renderer state (summoner ID, champions, filters)
+- `static/renderer/i18n.js`: internationalization (FR/EN) with language detection and persistence
 - `static/renderer/helpers.js`: normalization/formatting helpers
 - `static/renderer/ui.js`: rendering primitives and UI interactions
 - `static/assets/champions.json`: local champion dataset generated via [Meraki LoL Static Data](https://github.com/meraki-analytics/lolstaticdata)
@@ -66,6 +70,12 @@ npm start
 npm run build:win
 ```
 
+Publish artifacts (GitHub Releases):
+
+```bash
+npm run publish:win
+```
+
 ## IPC Bridge (`window.electronAPI`)
 
 Methods:
@@ -87,6 +97,7 @@ Events:
 - `onWebSocketError(callback)`
 - `onClientClose(callback)`
 - `onUpdateStatus(callback)`
+- `onGameStart(callback)` - triggered when game starts
 
 ## Runtime Flow (High Level)
 

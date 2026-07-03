@@ -25,6 +25,7 @@ import {
   capitalizeFirstLetter,
   getProfileIconUrl
 } from "./helpers.js";
+import { t } from "./i18n.js";
 
 /**
  * Updates collection header text.
@@ -39,16 +40,16 @@ export const setCollection = (text) => {
  * @param {object} summoner
  */
 export const renderSummonerCard = (summoner) => {
-  const displayName = summoner?.displayName || summoner?.gameName || "Unknown Summoner";
+  const displayName = summoner?.displayName || summoner?.gameName || t("summoner.unknown");
   const level = Number.isFinite(summoner?.summonerLevel) ? summoner.summonerLevel : "--";
-  const tag = summoner?.tagLine || summoner?.puuid || "No tag";
+  const tag = summoner?.tagLine || summoner?.puuid || t("summoner.noTag");
 
   summonerCardNode.classList.remove("is-disconnected");
-  summonerStateNode.textContent = "Connected";
+  summonerStateNode.textContent = t("summoner.connected");
   summonerNameNode.textContent = `${displayName}#${tag}`;
-  summonerLevelNode.textContent = `Level ${level}`;
+  summonerLevelNode.textContent = t("summoner.level", { level });
   summonerIconNode.src = getProfileIconUrl(summoner?.profileIconId);
-  summonerIconNode.alt = `${displayName} profile icon`;
+  summonerIconNode.alt = t("summoner.iconAlt", { name: displayName });
 };
 
 /**
@@ -57,9 +58,9 @@ export const renderSummonerCard = (summoner) => {
  */
 export const renderDisconnectedSummonerCard = (message) => {
   summonerCardNode.classList.add("is-disconnected");
-  summonerStateNode.textContent = message || "Not connected";
-  summonerNameNode.textContent = "Unknown Summoner";
-  summonerLevelNode.textContent = "Level --";
+  summonerStateNode.textContent = message || t("summoner.notConnected");
+  summonerNameNode.textContent = t("summoner.unknown");
+  summonerLevelNode.textContent = t("summoner.level", { level: "--" });
 };
 
 /**
@@ -126,13 +127,13 @@ export const renderSelectedChampionCard = (championId) => {
     selectedChampionIconFrameNode.classList.remove("is-validated");
     selectedChampionIconFrameNode.classList.add("is-pending");
     selectedChampionStatusNode.textContent = "?";
-    selectedChampionStatusNode.setAttribute("aria-label", "Statut inconnu");
-    selectedChampionNameNode.textContent = "Aucun champion";
+    selectedChampionStatusNode.setAttribute("aria-label", t("selected.unknownStatus"));
+    selectedChampionNameNode.textContent = t("selected.none");
     selectedChampionTitleNode.textContent = "";
     selectedChampionIconNode.src = "assets/default.png";
     selectedChampionIconNode.alt = "";
-    renderModeStats(selectedChampionAramStatsNode, [], "Aucun modificateur ARAM actif.");
-    renderModeStats(selectedChampionUrfStatsNode, [], "Aucun modificateur URF actif.");
+    renderModeStats(selectedChampionAramStatsNode, [], t("selected.aram.noneActive"));
+    renderModeStats(selectedChampionUrfStatsNode, [], t("selected.urf.noneActive"));
     syncSelectedChampionCardsUI();
     return;
   }
@@ -145,7 +146,7 @@ export const renderSelectedChampionCard = (championId) => {
   selectedChampionStatusNode.textContent = isValidated ? "✓" : "!";
   selectedChampionStatusNode.setAttribute(
     "aria-label",
-    isValidated ? "Champion valide pour le challenge" : "Champion non valide pour le challenge"
+    isValidated ? t("selected.valid") : t("selected.invalid")
   );
   selectedChampionNameNode.textContent = champion.name;
   selectedChampionTitleNode.textContent = capitalizeFirstLetter(champion.raw?.title);
@@ -154,12 +155,12 @@ export const renderSelectedChampionCard = (championId) => {
   renderModeStats(
     selectedChampionAramStatsNode,
     extractModeModifiers(champion.raw, "aram"),
-    "Aucun modificateur ARAM."
+    t("selected.aram.none")
   );
   renderModeStats(
     selectedChampionUrfStatsNode,
     extractModeModifiers(champion.raw, "urf"),
-    "Aucun modificateur URF."
+    t("selected.urf.none")
   );
   syncSelectedChampionCardsUI();
 };
@@ -176,7 +177,7 @@ export const createCard = (champion, isCompleted) => {
   item.dataset.championId = champion.id;
   item.tabIndex = 0;
   item.setAttribute("role", "button");
-  item.setAttribute("aria-label", `Voir les stats de ${champion.name}`);
+  item.setAttribute("aria-label", t("cards.viewStats", { name: champion.name }));
   item.setAttribute("aria-pressed", String(state.selectedChampionId === champion.id));
 
   if (state.selectedChampionId === champion.id) {
@@ -195,7 +196,7 @@ export const createCard = (champion, isCompleted) => {
   image.decoding = "async";
   image.referrerPolicy = "no-referrer";
   image.addEventListener("error", () => {
-    image.alt = `${champion.name} icon indisponible`;
+    image.alt = t("cards.iconUnavailable", { name: champion.name });
     image.style.opacity = "0.35";
   });
 
@@ -226,7 +227,7 @@ export const renderGrid = (targetList, champions, completedSet = new Set()) => {
   if (!champions.length) {
     const emptyMessage = document.createElement("li");
     emptyMessage.className = "empty";
-    emptyMessage.textContent = "Aucun champion pour ces filtres.";
+    emptyMessage.textContent = t("cards.empty");
     targetList.append(emptyMessage);
     return;
   }

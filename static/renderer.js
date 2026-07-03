@@ -16,13 +16,24 @@ import {
   loadChallengeButtonNode,
   settingsButtonNode,
   settingsPanelNode,
+  windowDragTitleNode,
+  settingsVersionLabelNode,
+  settingsUpdateLabelNode,
   appVersionNode,
   updateStatusNode,
+  languageGroupNode,
+  languageRadiosNode,
   summonerBackgroundToggleNode,
-  checkUpdateButtonNode
+  summonerBackgroundLabelNode,
+  checkUpdateButtonNode,
+  challengeLabelNode,
+  filtersTitleNode,
+  hideCompletedLabelNode,
+  crowdFavoriteTitleNode
 } from "./renderer/dom.js";
 import { state } from "./renderer/state.js";
 import { normalizeEntityId, normalizePosition, toChampionList } from "./renderer/helpers.js";
+import { getLanguage, setLanguage, t } from "./renderer/i18n.js";
 import {
   setCollection,
   renderSummonerCard,
@@ -286,7 +297,12 @@ const updateCollectionView = () => {
     return count + (state.completedChampionIds.has(champion.id) ? 1 : 0);
   }, 0);
 
-  setCollection(`Collection ${completedCount}/${filteredChampions.length}`);
+  setCollection(
+    t("collection.titleWithCount", {
+      completed: completedCount,
+      total: filteredChampions.length
+    })
+  );
 };
 
 /**
@@ -455,7 +471,9 @@ const stopSummonerRetry = () => {
  * Displays launcher waiting state.
  */
 const renderWaitingForLauncher = () => {
-  const message = `En attente du launcher (${state.launcherRetrySecondsRemaining}s)`;
+  const message = t("summoner.waitingLauncher", {
+    seconds: state.launcherRetrySecondsRemaining
+  });
   renderDisconnectedSummonerCard(message);
 };
 
@@ -463,7 +481,9 @@ const renderWaitingForLauncher = () => {
  * Displays summoner loading state.
  */
 const renderWaitingForSummoner = () => {
-  const message = `Recuperation du profil (${state.summonerRetrySecondsRemaining}s)`;
+  const message = t("summoner.waitingProfile", {
+    seconds: state.summonerRetrySecondsRemaining
+  });
   renderDisconnectedSummonerCard(message);
 };
 
@@ -637,30 +657,102 @@ const mapUpdateStatusLabel = (payload) => {
   const updateState = String(payload?.state || "").toLowerCase();
 
   if (updateState === "checking") {
-    return "Checking...";
+    return t("update.checking");
   }
   if (updateState === "update-available") {
-    const version = payload?.info?.version ? ` (${payload.info.version})` : "";
-    return `Update available${version}`;
+    const versionText = payload?.info?.version ? ` (${payload.info.version})` : "";
+    return t("update.available", { version: versionText });
   }
   if (updateState === "download-progress") {
     const percent = Number(payload?.progress?.percent);
     if (Number.isFinite(percent)) {
-      return `Downloading ${Math.round(percent)}%`;
+      return t("update.downloadingPercent", { percent: Math.round(percent) });
     }
-    return "Downloading...";
+    return t("update.downloading");
   }
   if (updateState === "update-downloaded") {
-    return "Ready to install";
+    return t("update.ready");
   }
   if (updateState === "update-not-available") {
-    return "Up to date";
+    return t("update.uptodate");
   }
   if (updateState === "error") {
-    return `Error: ${payload?.message || "unknown"}`;
+    return t("update.error", { message: payload?.message || "unknown" });
   }
 
-  return "Idle";
+  return t("update.idle");
+};
+
+const applyStaticTranslations = () => {
+  if (windowDragTitleNode) {
+    windowDragTitleNode.textContent = t("app.title");
+  }
+
+  if (settingsButtonNode) {
+    settingsButtonNode.setAttribute("aria-label", t("settings.openOptions"));
+  }
+
+  const settingsTitleNode = settingsPanelNode?.querySelector(".settings-title");
+  if (settingsTitleNode) {
+    settingsTitleNode.textContent = t("settings.application");
+  }
+
+  if (settingsVersionLabelNode) {
+    settingsVersionLabelNode.textContent = t("settings.version");
+  }
+
+  if (settingsUpdateLabelNode) {
+    settingsUpdateLabelNode.textContent = t("settings.update");
+  }
+
+  if (summonerBackgroundLabelNode) {
+    summonerBackgroundLabelNode.textContent = t("settings.luxMode");
+  }
+
+  if (checkUpdateButtonNode) {
+    checkUpdateButtonNode.textContent = t("settings.checkUpdates");
+  }
+
+  if (challengeLabelNode) {
+    challengeLabelNode.textContent = t("challenge.label");
+  }
+
+  if (loadChallengeButtonNode) {
+    loadChallengeButtonNode.setAttribute("aria-label", t("challenge.refresh"));
+  }
+
+  if (filtersTitleNode) {
+    filtersTitleNode.textContent = t("filters.title");
+  }
+
+  if (searchInputNode) {
+    searchInputNode.placeholder = t("filters.searchPlaceholder");
+  }
+
+  if (hideCompletedLabelNode) {
+    hideCompletedLabelNode.textContent = t("filters.hideCompleted");
+  }
+
+  if (crowdFavoriteTitleNode) {
+    crowdFavoriteTitleNode.textContent = t("crowdFavorite.title");
+  }
+};
+
+const applyLanguageToUi = () => {
+  applyStaticTranslations();
+  updateStatusNode.textContent = mapUpdateStatusLabel({ state: "idle" });
+
+  if (state.isSummonerConnected) {
+    attemptGetCurrentSummoner();
+  } else if (state.isClientConnected) {
+    renderWaitingForSummoner();
+  } else {
+    renderDisconnectedSummonerCard();
+  }
+
+  updateCollectionView();
+  renderCrowdFavorites(state.crowdFavoriteIds);
+  renderSelectedChampionCard(state.selectedChampionId);
 };
 
 const closeSettingsPanel = () => {
@@ -685,6 +777,19 @@ const toggleSettingsPanel = () => {
 const setupSettingsPanel = async () => {
   if (!settingsPanelNode || !settingsButtonNode || !appVersionNode || !updateStatusNode) {
     return;
+  }
+
+  if (languageGroupNode && languageRadiosNode) {
+    const currentLanguage = getLanguage();
+    languageRadiosNode.forEach((radio) => {
+      radio.checked = radio.value === currentLanguage;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          setLanguage(radio.value);
+          applyLanguageToUi();
+        }
+      });
+    });
   }
 
   settingsButtonNode.addEventListener("click", () => {
@@ -725,16 +830,16 @@ const setupSettingsPanel = async () => {
 
   if (checkUpdateButtonNode && window.electronAPI?.checkForUpdates) {
     checkUpdateButtonNode.addEventListener("click", async () => {
-      updateStatusNode.textContent = "Checking...";
+      updateStatusNode.textContent = t("settings.update.checking");
       checkUpdateButtonNode.disabled = true;
 
       try {
         const result = await window.electronAPI.checkForUpdates();
         if (!result?.ok) {
-          updateStatusNode.textContent = result?.message || "Unable to check updates";
+          updateStatusNode.textContent = result?.message || t("settings.update.unable");
         }
       } catch (error) {
-        updateStatusNode.textContent = "Unable to check updates";
+        updateStatusNode.textContent = t("settings.update.unable");
       } finally {
         checkUpdateButtonNode.disabled = false;
       }
@@ -818,6 +923,7 @@ positionButtonsNode.addEventListener("click", (event) => {
 
 syncPositionButtonsUI();
 setupSettingsPanel();
+applyLanguageToUi();
 loadChampionsAndRender();
 renderSelectedChampionCard("");
 startLauncherRetry();
@@ -864,7 +970,7 @@ if (window.electronAPI?.onClientClose) {
     stopSummonerRetry();
     renderSelectedChampionCard("");
     renderCrowdFavorites([]);
-    renderDisconnectedSummonerCard("Launcher ferme");
+    renderDisconnectedSummonerCard(t("summoner.notConnected"));
     startLauncherRetry();
   });
 }

@@ -97,9 +97,7 @@ body::before {
 }
 
 .settings-panel {
-  position: absolute;
-  top: 38px;
-  right: 0;
+  position: relative;
   z-index: 1200;
   width: min(320px, calc(100vw - 10px));
   padding: 12px;
@@ -108,6 +106,9 @@ body::before {
   background:
     linear-gradient(180deg, rgba(18, 29, 47, 0.98), rgba(11, 19, 33, 0.98));
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
+  position: absolute;
+  top: 38px;
+  right: 0;
 }
 
 .settings-title {
@@ -120,6 +121,83 @@ body::before {
   margin: 0 0 8px;
   font-size: 0.82rem;
   color: #a6b8db;
+}
+
+.language-group {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  gap: 0;
+  background: rgba(18, 28, 45, 0.9);
+  border-radius: 8px;
+  border: 1px solid rgba(92, 118, 161, 0.7);
+  overflow: hidden;
+}
+
+.language-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  flex: 0 0 36px;
+  height: 28px;
+  border-right: 1px solid rgba(92, 118, 161, 0.5);
+  transition: all 150ms ease;
+}
+
+.language-option:last-child {
+  border-right: none;
+}
+
+.language-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.language-option span {
+  position: relative;
+  z-index: 1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #8ba0c4;
+  transition: color 140ms ease;
+}
+
+.language-option input:checked + span {
+  color: #ffffff;
+}
+
+.language-option::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(53, 217, 200, 0.4), rgba(38, 145, 141, 0.3));
+  opacity: 0;
+  transition: opacity 140ms ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.language-option:has(> input:checked)::before {
+  opacity: 1;
+}
+
+.language-option input:focus-visible + span {
+  text-decoration: underline;
+  text-decoration-color: rgba(93, 219, 203, 0.6);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 .settings-switch {

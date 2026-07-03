@@ -8,13 +8,13 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://cdn.merakianalytics.com; img-src 'self' https: data:"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LoL Champions Gallery</title>
+    <title>League of Legends Challenges Tracker</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="window-drag-bar">
       <img class="window-drag-icon" src="assets/tracker.png" alt="" aria-hidden="true" />
-      <span class="window-drag-title">League of Legends Arena Tracker</span>
+      <span id="window-drag-title" class="window-drag-title">League of Legends Challenges Tracker</span>
     </div>
     <main class="page">
       <div class="top-panels">
@@ -33,13 +33,23 @@
                   &#9881;
                 </button>
                 <aside id="settings-panel" class="settings-panel" hidden>
+                  <fieldset id="language-group" class="language-group" role="group">
+                    <label class="language-option">
+                      <input type="radio" name="language" value="fr" />
+                      <span>FR</span>
+                    </label>
+                    <label class="language-option">
+                      <input type="radio" name="language" value="en" />
+                      <span>EN</span>
+                    </label>
+                  </fieldset>
                   <h2 class="settings-title">Application</h2>
-                  <p class="settings-row">Version: <strong id="app-version">-</strong></p>
-                  <p class="settings-row">Update: <span id="update-status">Idle</span></p>
+                  <p class="settings-row"><span id="settings-version-label">Version</span>: <strong id="app-version">-</strong></p>
+                  <p class="settings-row"><span id="settings-update-label">Update</span>: <span id="update-status">Idle</span></p>
                   <label class="settings-switch toggle-filter" for="summoner-bg-toggle">
                     <input id="summoner-bg-toggle" type="checkbox" />
                     <span class="toggle-filter-switch" aria-hidden="true"></span>
-                    <span class="toggle-filter-label">Lux Mode</span>
+                    <span id="summoner-bg-label" class="toggle-filter-label">Lux Mode</span>
                   </label>
                   <button id="check-update-button" type="button" class="settings-action-button">
                     Check for updates
@@ -61,7 +71,7 @@
 
             <div class="actions">
               <label class="challenge-control" for="challenge-select">
-                <span>Challenge</span>
+                <span id="challenge-label">Challenge</span>
                 <select id="challenge-select">
                   <option value=""></option>
                 </select>
@@ -132,7 +142,7 @@
           <label class="toggle-filter" for="hide-completed-toggle">
             <input id="hide-completed-toggle" type="checkbox" />
             <span class="toggle-filter-switch" aria-hidden="true"></span>
-            <span class="toggle-filter-label">Cacher les champions réussis</span>
+            <span id="hide-completed-label" class="toggle-filter-label">Cacher les champions réussis</span>
           </label>
         </section>
       </div>

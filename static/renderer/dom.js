@@ -24,7 +24,16 @@ export const hideCompletedToggleNode = document.getElementById("hide-completed-t
 export const loadChallengeButtonNode = document.getElementById("refresh-challenge");
 export const settingsButtonNode = document.getElementById("settings-button");
 export const settingsPanelNode = document.getElementById("settings-panel");
+export const windowDragTitleNode = document.getElementById("window-drag-title");
+export const settingsVersionLabelNode = document.getElementById("settings-version-label");
+export const settingsUpdateLabelNode = document.getElementById("settings-update-label");
 export const appVersionNode = document.getElementById("app-version");
 export const updateStatusNode = document.getElementById("update-status");
+export const languageGroupNode = document.getElementById("language-group");
+export const languageRadiosNode = document.querySelectorAll('input[name="language"]');
 export const summonerBackgroundToggleNode = document.getElementById("summoner-bg-toggle");
+export const summonerBackgroundLabelNode = document.getElementById("summoner-bg-label");
 export const checkUpdateButtonNode = document.getElementById("check-update-button");
+export const challengeLabelNode = document.getElementById("challenge-label");
+export const filtersTitleNode = document.getElementById("filters-title");
+export const hideCompletedLabelNode = document.getElementById("hide-completed-label");
