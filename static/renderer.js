@@ -62,7 +62,7 @@ const extractSelectedChampionId = (sessionData) => {
   const selectedAction = actions
     .filter((action) => Number(action?.actorCellId) === localPlayerCellId)
     .reverse()
-    .find((action) => Number(action?.championId) > 0);
+    .find((action) => Number(action?.championId) !== 0);
 
   if (selectedAction) {
     return normalizeEntityId(selectedAction.championId);
@@ -72,7 +72,13 @@ const extractSelectedChampionId = (sessionData) => {
     ? sessionData.myTeam.find((player) => Number(player?.cellId) === localPlayerCellId)
     : null;
 
-  return normalizeEntityId(localPlayer?.championId);
+  const pickedChamp = normalizeEntityId(localPlayer?.championId);
+
+  if (pickedChamp !== 0) {
+    return pickedChamp
+  } else {
+    return normalizeEntityId(localPlayer?.championPickIntent);
+  }
 };
 
 /**
@@ -918,10 +924,6 @@ startLauncherRetry();
 if (window.electronAPI?.onChampSelectUpdate) {
   window.electronAPI.onChampSelectUpdate((eventData) => {
     const nextSelectedChampionId = extractSelectedChampionId(eventData);
-    if (nextSelectedChampionId == "-3") {
-        renderSelectedChampionCard(nextSelectedChampionId);
-        return;
-      }
     if (nextSelectedChampionId) {
       renderSelectedChampionCard(nextSelectedChampionId);
     }
@@ -951,15 +953,9 @@ if (window.electronAPI?.onChampSelectPick) {
 
     if (eventType === "create" || eventType === "update") {
       const nextSelectedChampionId = normalizeEntityId(eventData?.data);
-      if (nextSelectedChampionId == "-3") {
-        renderSelectedChampionCard(nextSelectedChampionId);
-        return;
-      }
-
       if (nextSelectedChampionId) {
         renderSelectedChampionCard(nextSelectedChampionId);
-      } 
-      
+      }      
     }
   });
 }
