@@ -2,29 +2,42 @@
 
 Desktop Electron app to track challenge progression and champion viability in real time from League Client (LCU).
 
+## Installation
+
+1. Go to [latest Release](https://github.com/Mynute/LoL-Tracker/releases/latest)
+2. Download Challenge-Tracker-Setup-X.X.X.exe
+3. Process Installation
+
+## Screenshots
+*Idle Launcher*
 ![Main frame](static/assets/mainframe.png)
 
-## Features
+*Arena Lobby - Crowd favorite*
+![Main frame Arena](static/assets/mainframe_crowd.png)
 
-- Auto-detects League lockfile and connects to LCU
-- Single app instance (focuses existing window on second launch)
-- Summoner card with retry logic when launcher/client is unavailable
-- Summoner ID tracking for session management
-- Settings gear in top-right of summoner card (version + updater + language toggle)
-- Challenge selector with description and completion tracking
-- Champion grid with search/position/hide-completed filters
-- Selected champion side card with ARAM and URF modifiers
-- Crowd favorite section from champ-select endpoint
-- Automatic champion update on game start event
-- Full internationalization (FR/EN) with language persistence
-- Automatic UI fallback on client close (`client-close` event)
-- Manual `Check for updates` action from renderer UI
-- Window size and position persistence between launches
+## Features & Todo list
+
+- [x] Auto-detects League lockfile and connects to LCU
+- [x] Single app instance (focuses existing window on second launch)
+- [x] Summoner card with retry logic when launcher/client is unavailable
+- [x] Summoner ID tracking for session management
+- [x] Settings gear in top-right of summoner card (version + updater + language toggle)
+- [x] Challenge selector with description and completion tracking
+- [x] Champion grid with search/position/hide-completed filters
+- [x] Selected champion side card with ARAM and URF modifiers
+- [x] Crowd favorite section from champ-select endpoint
+- [x] Automatic champion update on game start event
+- [x] Full internationalization (FR/EN) with language persistence
+- [x] Automatic UI fallback on client close (`client-close` event)
+- [x] Manual `Check for updates` action from renderer UI
+- [x] Window size and position persistence between launches
+- [ ] Aram eligible section from champ-select endpoint
+- [ ] Challenge selection persistence between launches
 
 ## Tech Stack
 
 - Electron 42
-- Vanilla HTML/CSS/JS (ES modules in renderer)
+- Vanilla HTML/CSS/JS (ES modules in renderer) *Note: It's a personal choice for a small project framework would just slow me down*
 - WebSocket (`ws`) for LCU event stream
 - electron-builder for Windows packaging
 
