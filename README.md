@@ -31,8 +31,10 @@ Desktop Electron app to track challenge progression and champion viability in re
 - [x] Automatic UI fallback on client close (`client-close` event)
 - [x] Manual `Check for updates` action from renderer UI
 - [x] Window size and position persistence between launches
+- [x] Selected champion side card with ARENA spells modifiers
 - [ ] Aram eligible section from champ-select endpoint
 - [ ] Challenge selection persistence between launches
+- [ ] Automatic Challenge Force Refresh (After Game or after a long timer)
 
 ## Tech Stack
 

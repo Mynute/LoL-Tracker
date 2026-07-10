@@ -2,7 +2,8 @@ import {
   CHAMPIONS_URL,
   AUTO_CONNECT_RETRY_SECONDS,
   DEFAULT_CHALLENGE_ID,
-  SUMMONER_BG_STORAGE_KEY
+  SUMMONER_BG_STORAGE_KEY,
+  ARENA_PANEL_COLLAPSED_STORAGE_KEY
 } from "./renderer/config.js";
 import {
   crowdFavoriteList,
@@ -29,7 +30,9 @@ import {
   challengeLabelNode,
   filtersTitleNode,
   hideCompletedLabelNode,
-  crowdFavoriteTitleNode
+  crowdFavoriteTitleNode,
+  selectedChampionArenaTitleNode,
+  selectedChampionArenaToggleNode
 } from "./renderer/dom.js";
 import { state } from "./renderer/state.js";
 import { normalizeEntityId, normalizePosition, toChampionList } from "./renderer/helpers.js";
@@ -43,7 +46,8 @@ import {
   handleChampionCardKeydown,
   renderGrid,
   setCrowdFavoriteVisibility,
-  syncPositionButtonsUI
+  syncPositionButtonsUI,
+  setArenaPanelCollapsed
 } from "./renderer/ui.js";
 
 /**
@@ -729,6 +733,55 @@ const applyStaticTranslations = () => {
   if (crowdFavoriteTitleNode) {
     crowdFavoriteTitleNode.textContent = t("crowdFavorite.title");
   }
+
+  if (selectedChampionArenaTitleNode) {
+    selectedChampionArenaTitleNode.textContent = t("selected.arena.title");
+  }
+
+  if (selectedChampionArenaToggleNode) {
+    const isExpanded = selectedChampionArenaToggleNode.getAttribute("aria-expanded") !== "false";
+    selectedChampionArenaToggleNode.textContent = isExpanded ? "-" : "+";
+    selectedChampionArenaToggleNode.setAttribute(
+      "aria-label",
+      isExpanded ? t("selected.arena.collapse") : t("selected.arena.expand")
+    );
+  }
+};
+
+const setupArenaPanelToggle = () => {
+  if (!selectedChampionArenaToggleNode) {
+    return;
+  }
+
+  const syncArenaToggleUi = (isCollapsed) => {
+    selectedChampionArenaToggleNode.textContent = isCollapsed ? "+" : "-";
+    selectedChampionArenaToggleNode.setAttribute(
+      "aria-label",
+      isCollapsed ? t("selected.arena.expand") : t("selected.arena.collapse")
+    );
+  };
+
+  let isCollapsed = false;
+  try {
+    isCollapsed = localStorage.getItem(ARENA_PANEL_COLLAPSED_STORAGE_KEY) === "1";
+  } catch (error) {
+    isCollapsed = false;
+  }
+
+  setArenaPanelCollapsed(isCollapsed);
+  syncArenaToggleUi(isCollapsed);
+
+  selectedChampionArenaToggleNode.addEventListener("click", () => {
+    const nextCollapsed = selectedChampionArenaToggleNode.getAttribute("aria-expanded") === "true";
+    setArenaPanelCollapsed(nextCollapsed);
+    syncArenaToggleUi(nextCollapsed);
+
+    try {
+      localStorage.setItem(ARENA_PANEL_COLLAPSED_STORAGE_KEY, nextCollapsed ? "1" : "0");
+    } catch (error) {
+      // Ignore storage write failures.
+    }
+  });
 };
 
 const applyLanguageToUi = () => {
@@ -916,6 +969,7 @@ positionButtonsNode.addEventListener("click", (event) => {
 
 syncPositionButtonsUI();
 setupSettingsPanel();
+setupArenaPanelToggle();
 applyLanguageToUi();
 loadChampionsAndRender();
 renderSelectedChampionCard("");

@@ -69,7 +69,8 @@
               </div>
             </article>
 
-            <div class="actions">
+            <section class="section filters-section" aria-labelledby="filters-title">
+              <h2 id="filters-title">Filtres</h2>
               <label class="challenge-control" for="challenge-select">
                 <span id="challenge-label">Challenge</span>
                 <select id="challenge-select">
@@ -78,7 +79,37 @@
                 <button id="refresh-challenge" type="button" aria-label="Refresh challenge">&#x21BB;</button>
                 <p id="challenge-description" class="challenge-description" hidden></p>
               </label>
-            </div>
+              <div class="filters-top">
+                <div class="positions-field">
+                  <div id="position-buttons" class="position-buttons" role="group" aria-label="Positions">
+                    <button type="button" class="position-btn" data-position="TOP" aria-label="Top">
+                      <img class="position-icon" src="assets/top.png" alt="" aria-hidden="true" />
+                    </button>
+                    <button type="button" class="position-btn" data-position="JUNGLE" aria-label="Jungle">
+                      <img class="position-icon" src="assets/jungle.png" alt="" aria-hidden="true" />
+                    </button>
+                    <button type="button" class="position-btn" data-position="MIDDLE" aria-label="Mid">
+                      <img class="position-icon" src="assets/mid.png" alt="" aria-hidden="true" />
+                    </button>
+                    <button type="button" class="position-btn" data-position="BOTTOM" aria-label="Bot">
+                      <img class="position-icon" src="assets/bot.png" alt="" aria-hidden="true" />
+                    </button>
+                    <button type="button" class="position-btn" data-position="UTILITY" aria-label="Support">
+                      <img class="position-icon" src="assets/support.png" alt="" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+
+                <label class="filter-field search-field" for="champion-search">
+                  <input id="champion-search" type="search" placeholder="Nom du champion" />
+                </label>
+              </div>
+              <label class="toggle-filter" for="hide-completed-toggle">
+                <input id="hide-completed-toggle" type="checkbox" />
+                <span class="toggle-filter-switch" aria-hidden="true"></span>
+                <span id="hide-completed-label" class="toggle-filter-label">Cacher les champions réussis</span>
+              </label>
+            </section>
           </div>
 
           <div class="hero-side">
@@ -107,44 +138,24 @@
                   <h3 id="selected-champion-urf-title" class="mode-stat-title">URF</h3>
                   <ul id="selected-champion-urf-stats" class="mode-stat-list"></ul>
                 </section>
+                <section id="selected-champion-arena-panel" class="mode-stat-panel arena-changes-panel" aria-labelledby="selected-champion-arena-title">
+                  <div class="mode-stat-header">
+                    <h3 id="selected-champion-arena-title" class="mode-stat-title">Arena</h3>
+                    <button
+                      id="selected-champion-arena-toggle"
+                      class="mode-stat-toggle"
+                      type="button"
+                      aria-label="Replier la section Arena"
+                      aria-expanded="true"
+                      aria-controls="selected-champion-arena-stats"
+                    >v</button>
+                  </div>
+                  <ul id="selected-champion-arena-stats" class="arena-changes-list"></ul>
+                </section>
               </div>
             </article>
           </div>
         </header>
-
-        <section class="section filters-section" aria-labelledby="filters-title">
-          <h2 id="filters-title">Filtres</h2>
-          <div class="filters-top">
-            <div class="positions-field">
-              <div id="position-buttons" class="position-buttons" role="group" aria-label="Positions">
-                <button type="button" class="position-btn" data-position="TOP" aria-label="Top">
-                  <img class="position-icon" src="assets/top.png" alt="" aria-hidden="true" />
-                </button>
-                <button type="button" class="position-btn" data-position="JUNGLE" aria-label="Jungle">
-                  <img class="position-icon" src="assets/jungle.png" alt="" aria-hidden="true" />
-                </button>
-                <button type="button" class="position-btn" data-position="MIDDLE" aria-label="Mid">
-                  <img class="position-icon" src="assets/mid.png" alt="" aria-hidden="true" />
-                </button>
-                <button type="button" class="position-btn" data-position="BOTTOM" aria-label="Bot">
-                  <img class="position-icon" src="assets/bot.png" alt="" aria-hidden="true" />
-                </button>
-                <button type="button" class="position-btn" data-position="UTILITY" aria-label="Support">
-                  <img class="position-icon" src="assets/support.png" alt="" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-
-            <label class="filter-field search-field" for="champion-search">
-              <input id="champion-search" type="search" placeholder="Nom du champion" />
-            </label>
-          </div>
-          <label class="toggle-filter" for="hide-completed-toggle">
-            <input id="hide-completed-toggle" type="checkbox" />
-            <span class="toggle-filter-switch" aria-hidden="true"></span>
-            <span id="hide-completed-label" class="toggle-filter-label">Cacher les champions réussis</span>
-          </label>
-        </section>
       </div>
 
       <section class="section" aria-labelledby="collection-title">
@@ -153,6 +164,7 @@
         <ul id="crowd-favorite-list" class="image-grid featured-grid featured-grid-in-collection"></ul>
         <ul id="collection-list" class="image-grid all-grid"></ul>
       </section>
+
     </main>
 
     <script type="module" src="./renderer.js"></script>

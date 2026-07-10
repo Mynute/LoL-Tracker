@@ -15,6 +15,9 @@ import {
   selectedChampionTitleNode,
   selectedChampionAramStatsNode,
   selectedChampionUrfStatsNode,
+  selectedChampionArenaPanelNode,
+  selectedChampionArenaToggleNode,
+  selectedChampionArenaStatsNode,
   positionButtonsNode
 } from "./dom.js";
 import { state } from "./state.js";
@@ -102,6 +105,192 @@ export const renderModeStats = (targetNode, modifiers, emptyLabel) => {
 };
 
 /**
+ * Applies Arena panel collapsed state to UI.
+ * @param {boolean} isCollapsed
+ */
+export const setArenaPanelCollapsed = (isCollapsed) => {
+  if (!selectedChampionArenaPanelNode || !selectedChampionArenaToggleNode) {
+    return;
+  }
+
+  selectedChampionArenaPanelNode.classList.toggle("is-collapsed", Boolean(isCollapsed));
+  selectedChampionArenaToggleNode.setAttribute("aria-expanded", String(!isCollapsed));
+};
+
+/**
+ * Renders Arena ability changes for selected champion.
+ * @param {HTMLElement} targetNode
+ * @param {Record<string, string[] | string | {name?:string,icon?:string,changes?:string[]|string}>} arenaChanges
+ * @param {string} emptyLabel
+ * @param {Record<string, Array<{name?:string,icon?:string}>>=} abilities
+ */
+const renderArenaChanges = (targetNode, arenaChanges, emptyLabel, abilities = {}) => {
+  targetNode.innerHTML = "";
+
+  const resolveAbilityMeta = (abilityKey) => {
+    const defaultMeta = { abilityName: abilityKey, abilityIcon: "" };
+    const bucket = abilities?.[abilityKey];
+    if (!Array.isArray(bucket) || !bucket.length) {
+      return defaultMeta;
+    }
+
+    const first = bucket[0] || {};
+    return {
+      abilityName: typeof first.name === "string" && first.name.trim() ? first.name : abilityKey,
+      abilityIcon: typeof first.icon === "string" ? first.icon : ""
+    };
+  };
+
+  const entries = Object.entries(arenaChanges || {})
+    .map(([abilityKey, payload]) => {
+      if (Array.isArray(payload)) {
+        const meta = resolveAbilityMeta(abilityKey);
+        return {
+          abilityKey,
+          abilityName: meta.abilityName,
+          abilityIcon: meta.abilityIcon,
+          changes: payload
+        };
+      }
+
+      if (typeof payload === "string") {
+        const meta = resolveAbilityMeta(abilityKey);
+        return {
+          abilityKey,
+          abilityName: meta.abilityName,
+          abilityIcon: meta.abilityIcon,
+          changes: [payload]
+        };
+      }
+
+      if (payload && typeof payload === "object") {
+        const meta = resolveAbilityMeta(abilityKey);
+        const rawChanges = payload.changes;
+        const changes = Array.isArray(rawChanges)
+          ? rawChanges
+          : typeof rawChanges === "string"
+            ? [rawChanges]
+            : [];
+
+        return {
+          abilityKey,
+          abilityName: meta.abilityName,
+          abilityIcon: meta.abilityIcon,
+          changes
+        };
+      }
+
+      return {
+        abilityKey,
+        ...resolveAbilityMeta(abilityKey),
+        changes: []
+      };
+    })
+    .filter((entry) => entry.changes.some((change) => typeof change === "string" && change.trim().length > 0));
+
+  if (!entries.length) {
+    const item = document.createElement("li");
+    item.className = "mode-stat-empty";
+    item.textContent = emptyLabel;
+    targetNode.append(item);
+    return;
+  }
+
+  const abilityOrder = ["General", "P", "Q", "W", "E", "R"];
+  const abilityOrderMap = new Map(abilityOrder.map((value, index) => [value, index]));
+
+  entries.sort((left, right) => {
+    const leftRank = abilityOrderMap.has(left.abilityKey)
+      ? abilityOrderMap.get(left.abilityKey)
+      : Number.MAX_SAFE_INTEGER;
+    const rightRank = abilityOrderMap.has(right.abilityKey)
+      ? abilityOrderMap.get(right.abilityKey)
+      : Number.MAX_SAFE_INTEGER;
+
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+
+    return left.abilityName.localeCompare(right.abilityName);
+  });
+
+  const fragment = document.createDocumentFragment();
+
+  entries.forEach(({ abilityKey, abilityName, abilityIcon, changes }) => {
+    const item = document.createElement("li");
+    item.className = "arena-change-item";
+
+    const abilityNode = document.createElement("p");
+    abilityNode.className = "arena-change-ability";
+
+    if (abilityIcon) {
+      const iconNode = document.createElement("img");
+      iconNode.className = "arena-change-ability-icon";
+      iconNode.src = abilityIcon;
+      iconNode.alt = "";
+      iconNode.loading = "lazy";
+      iconNode.decoding = "async";
+      abilityNode.append(iconNode);
+    }
+
+    const labelNode = document.createElement("span");
+    labelNode.className = "arena-change-ability-label";
+    if (abilityKey === "General") {
+      labelNode.textContent = t("selected.arena.general");
+    } else {
+      labelNode.textContent = abilityName
+        ? `${abilityKey} - ${abilityName}`
+        : abilityKey;
+    }
+    abilityNode.append(labelNode);
+
+    const linesNode = document.createElement("ul");
+    linesNode.className = "arena-change-lines";
+
+    changes.forEach((change) => {
+      if (typeof change !== "string" || !change.trim()) {
+        return;
+      }
+
+      const line = document.createElement("li");
+      line.className = "arena-change-line";
+      const trimmedChange = change.trim();
+      const newEffectMatch = trimmedChange.match(/^(New Effect:)\s*(.*)$/i);
+
+      if (newEffectMatch) {
+        const strongPrefix = document.createElement("strong");
+        strongPrefix.textContent = newEffectMatch[1];
+        line.append(strongPrefix);
+
+        if (newEffectMatch[2]) {
+          line.append(document.createTextNode(` ${newEffectMatch[2]}`));
+        }
+      } else {
+        line.textContent = change;
+      }
+      linesNode.append(line);
+    });
+
+    if (!linesNode.childElementCount) {
+      return;
+    }
+
+    item.append(abilityNode, linesNode);
+    fragment.append(item);
+  });
+
+  if (!fragment.childElementCount) {
+    const item = document.createElement("li");
+    item.className = "mode-stat-empty";
+    item.textContent = emptyLabel;
+    targetNode.append(item);
+    return;
+  }
+
+  targetNode.append(fragment);
+};
+
+/**
  * Synchronizes selected champion class on all champion cards.
  */
 export const syncSelectedChampionCardsUI = () => {
@@ -135,6 +324,7 @@ export const renderSelectedChampionCard = (championId) => {
     selectedChampionIconNode.alt = t("selected.bravery");
     renderModeStats(selectedChampionAramStatsNode, [], t("selected.aram.noneActive"));
     renderModeStats(selectedChampionUrfStatsNode, [], t("selected.urf.noneActive"));
+    renderArenaChanges(selectedChampionArenaStatsNode, null, t("selected.arena.noneActive"));
     syncSelectedChampionCardsUI();
     return;
   }
@@ -151,6 +341,7 @@ export const renderSelectedChampionCard = (championId) => {
     selectedChampionIconNode.alt = "";
     renderModeStats(selectedChampionAramStatsNode, [], t("selected.aram.noneActive"));
     renderModeStats(selectedChampionUrfStatsNode, [], t("selected.urf.noneActive"));
+    renderArenaChanges(selectedChampionArenaStatsNode, null, t("selected.arena.noneActive"));
     syncSelectedChampionCardsUI();
     return;
   }
@@ -178,6 +369,12 @@ export const renderSelectedChampionCard = (championId) => {
     selectedChampionUrfStatsNode,
     extractModeModifiers(champion.raw, "urf"),
     t("selected.urf.none")
+  );
+  renderArenaChanges(
+    selectedChampionArenaStatsNode,
+    champion.raw?.arenaChanges || champion.raw?.arena_changes,
+    t("selected.arena.none"),
+    champion.raw?.abilities
   );
   syncSelectedChampionCardsUI();
 };
