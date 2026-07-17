@@ -128,7 +128,24 @@ const renderArenaChanges = (targetNode, arenaChanges, emptyLabel, abilities = {}
   targetNode.innerHTML = "";
 
   const resolveAbilityMeta = (abilityKey) => {
-    const defaultMeta = { abilityName: abilityKey, abilityIcon: "" };
+    const defaultMeta = { abilityName: abilityKey, abilityIcon: "" };    
+
+    const variantMatch = String(abilityKey || "").match(/^([PQWER])(\d+)$/i);
+    if (variantMatch) {
+      const slotKey = variantMatch[1].toUpperCase();
+      const variantIndex = Math.max(0, Number(variantMatch[2]) - 1);
+      const bucket = abilities?.[slotKey];
+      if (!Array.isArray(bucket) || !bucket.length) {
+        return defaultMeta;
+      }
+
+      const variant = bucket[variantIndex] || bucket[0] || {};
+      return {
+        abilityName: typeof variant.name === "string" && variant.name.trim() ? variant.name : abilityKey,
+        abilityIcon: typeof variant.icon === "string" ? variant.icon : ""
+      };
+    }
+
     const bucket = abilities?.[abilityKey];
     if (!Array.isArray(bucket) || !bucket.length) {
       return defaultMeta;
@@ -196,19 +213,30 @@ const renderArenaChanges = (targetNode, arenaChanges, emptyLabel, abilities = {}
     return;
   }
 
-  const abilityOrder = ["General", "P", "Q", "W", "E", "R"];
-  const abilityOrderMap = new Map(abilityOrder.map((value, index) => [value, index]));
+  const sortAbilityKey = (value) => {
+    if (value === "General") {
+      return [0, -1, 0, value];
+    }
+
+    const match = String(value || "").match(/^([PQWER])(\d+)?$/i);
+    const baseOrder = { P: 1, Q: 2, W: 3, E: 4, R: 5 };
+    if (!match) {
+      return [99, 99, 99, value];
+    }
+
+    const slot = match[1].toUpperCase();
+    const suffix = match[2] ? Number(match[2]) : 0;
+    return [1, baseOrder[slot] || 99, suffix, value];
+  };
 
   entries.sort((left, right) => {
-    const leftRank = abilityOrderMap.has(left.abilityKey)
-      ? abilityOrderMap.get(left.abilityKey)
-      : Number.MAX_SAFE_INTEGER;
-    const rightRank = abilityOrderMap.has(right.abilityKey)
-      ? abilityOrderMap.get(right.abilityKey)
-      : Number.MAX_SAFE_INTEGER;
+    const leftSort = sortAbilityKey(left.abilityKey);
+    const rightSort = sortAbilityKey(right.abilityKey);
 
-    if (leftRank !== rightRank) {
-      return leftRank - rightRank;
+    for (let i = 0; i < leftSort.length; i += 1) {
+      if (leftSort[i] !== rightSort[i]) {
+        return leftSort[i] < rightSort[i] ? -1 : 1;
+      }
     }
 
     return left.abilityName.localeCompare(right.abilityName);
